@@ -1,0 +1,4 @@
+github.com/3d0c/gmf v0.0.0-20190724130615-f4b5acb7db5c h1:0MMmgSFC0S35+N5rZlUIuQL56GhKz3ISBVnLkzxKmaI=
+github.com/3d0c/gmf v0.0.0-20190724130615-f4b5acb7db5c/go.mod h1:0QMRcUq2JsDECeAq7bj4h79k7XbhtTsrPUQf6G7qfPs=
+github.com/patrickmn/go-cache v2.1.0+incompatible h1:HRMgzkcYKYpi3C8ajMPV8OFXaaRUnok+kx1WdO15EQc=
+github.com/patrickmn/go-cache v2.1.0+incompatible/go.mod h1:3Qf8kWWT7OJRJbdiICTKqZju1ZixQ/KpMGzzAfe6+WQ=
