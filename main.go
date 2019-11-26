@@ -2,8 +2,19 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"os"
 	"time"
 )
+
+var port = flag.Int("port", 8080, "http server listen port")
+
+func init() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [options] live_stream_url\n", os.Args[0])
+		flag.PrintDefaults()
+	}
+}
 
 func main() {
 	flag.Parse()
@@ -24,9 +35,9 @@ func main() {
 				demuxing(iCtx, streamInfoChan)
 			}
 
-			time.Sleep(time.Second)
+			time.Sleep(time.Second * 5)
 		}
 	}()
 
-	startHTTPServer(8080)
+	startHTTPServer(*port)
 }

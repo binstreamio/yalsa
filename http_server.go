@@ -46,12 +46,13 @@ func startHTTPServer(port int) {
 		c.String(200, "pong")
 	})
 
-	r.GET("/v1/streams", func(c *gin.Context) {
-		c.String(200, "pong")
-	})
 	r.GET("/v1/points", _feedPoints)
 
-	r.StaticFile("/", "./html/index.html")
+	r.StaticFile("/home", "./html/index.html") // for dev purpose
+
+	r.GET("/", func(c *gin.Context) {
+		c.Data(http.StatusOK, "text/html", MustAsset("html/index.html"))
+	})
 
 	fmt.Println("Running http server on", fmt.Sprintf(":%d", port))
 

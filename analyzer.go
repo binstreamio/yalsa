@@ -129,6 +129,5 @@ func demuxing(inputContext *gmf.FmtCtx, streamInfoChan chan *yalsaFrame) {
 		if pkt != nil {
 			pkt.Free()
 		}
-
 	}
 }

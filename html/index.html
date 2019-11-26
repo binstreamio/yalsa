@@ -3,30 +3,31 @@
 
 <head>
     <meta charset="utf-8">
-    <!-- 引入 ECharts 文件 -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@4.4.0/dist/echarts.min.js"></script>
 </head>
 
 
 <body>
+    <br><br>
     <div id="title">
         <h1 style="text-align: center">Live Stream Monitor</h1>
     </div>
-    <div id="real_time" style="height:300px; display: grid; grid-template-columns: 8% 40% 4% 40%;">
+    <br>
+    <div id="real_time" style="height:250px; display: grid; grid-template-columns: 8% 40% 4% 40%;">
         <div></div>
         <div id="real_time_fps" style="background-color: #ebf1eb;"></div>
         <div></div>
         <div id="real_time_bitrate" style="background-color: #ebf1eb;"></div>
     </div>
     <br><br><br>
-    <div id="fps_history" style="height:400px;"></div>
+    <div id="fps_history" style="height:300px;"></div>
 </body>
 
 <script type="text/javascript">
     var xAxisData = [];
-    var data1 = [];
-    var data2 = [];
-    var date = [];
+    var hisF1 = [];
+    var hisF10 = [];
+    var hisDate = [];
 
     var rtF1 = [];
     var rtF10 = [];
@@ -56,7 +57,7 @@
         xAxis: {
             type: 'category',
             boundaryGap: false,
-            data: date
+            data: hisDate
         },
         yAxis: {
             type: 'value',
@@ -98,7 +99,7 @@
                         color: 'rgb(255, 70, 131)'
                     }])
                 },
-                data: data1
+                data: hisF1
             },
             {
                 name: 'FPS_10s',
@@ -109,8 +110,8 @@
                 itemStyle: {
                     color: 'rgb(44, 70, 222)'
                 },
-                
-                data: data2
+
+                data: hisF10
             },
         ]
     };
@@ -143,8 +144,8 @@
             showSymbol: false,
             hoverAnimation: false,
             itemStyle: {
-                    color: 'rgb(255, 70, 131)'
-                },
+                color: 'rgb(255, 70, 131)'
+            },
             data: rtF1
         },
         {
@@ -153,8 +154,8 @@
             showSymbol: false,
             hoverAnimation: false,
             itemStyle: {
-                    color: 'rgb(33, 70, 131)'
-                },
+                color: 'rgb(33, 70, 131)'
+            },
             data: rtF10
         }]
     };
@@ -187,8 +188,8 @@
             showSymbol: false,
             hoverAnimation: false,
             itemStyle: {
-                    color: 'rgb(255, 70, 131)'
-                },
+                color: 'rgb(255, 70, 131)'
+            },
             data: rtBR
         }]
     };
@@ -204,9 +205,9 @@
             var now = new Date(a.timestamp_ms)
             var tmstr = [now.getHours(), now.getMinutes(), now.getSeconds()].join(':')
 
-            data1.push(a.avg_fps_1s)
-            data2.push(a.avg_fps_100s)
-            date.push(tmstr)
+            hisF1.push(a.avg_fps_1s)
+            hisF10.push(a.avg_fps_10s)
+            hisDate.push(tmstr)
 
             rtF1.push(a.avg_fps_1s)
             rtF10.push(a.avg_fps_10s)
@@ -223,7 +224,7 @@
             lastPoint = a.timestamp_ms
         })
 
-       
+
     }
 
     fetch('/v1/points?last_point=' + lastPoint)
@@ -235,17 +236,15 @@
             fpsHistory.setOption(option);
         });
 
-    setInterval(function() {
+    setInterval(function () {
         fetch('/v1/points?last_point=' + lastPoint)
-        .then(response => response.json())
-        .then(data => {
-            renderData(data)
-            fpsRealTime.setOption(optionRTF);
-            brRealTime.setOption(optionBR);
-        });
+            .then(response => response.json())
+            .then(data => {
+                renderData(data)
+                fpsRealTime.setOption(optionRTF);
+                brRealTime.setOption(optionBR);
+            });
     }, 1000)
-
-
 </script>
 
 </html>
