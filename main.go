@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"time"
 )
 
 func main() {
@@ -12,14 +13,20 @@ func main() {
 		return
 	}
 
-	iCtx, err := openStream(flag.Arg(0))
-	if err != nil {
-		return
-	}
-
 	streamInfoChan := make(chan *yalsaFrame)
 
-	go demuxing(iCtx, streamInfoChan)
+	go output(streamInfoChan)
 
-	output(streamInfoChan)
+	go func() {
+		for {
+			iCtx, err := openStream(flag.Arg(0))
+			if err == nil {
+				demuxing(iCtx, streamInfoChan)
+			}
+
+			time.Sleep(time.Second)
+		}
+	}()
+
+	startHTTPServer(8080)
 }

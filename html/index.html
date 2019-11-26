@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <!-- 引入 ECharts 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@4.4.0/dist/echarts.min.js"></script>
+</head>
+
+
+<body>
+    <div id="title">
+        <h1 style="text-align: center">Live Stream Monitor</h1>
+    </div>
+    <div id="real_time" style="height:300px; display: grid; grid-template-columns: 8% 40% 4% 40%;">
+        <div></div>
+        <div id="real_time_fps" style="background-color: #ebf1eb;"></div>
+        <div></div>
+        <div id="real_time_bitrate" style="background-color: #ebf1eb;"></div>
+    </div>
+    <br><br><br>
+    <div id="fps_history" style="height:400px;"></div>
+</body>
+
+<script type="text/javascript">
+    var xAxisData = [];
+    var data1 = [];
+    var data2 = [];
+    var date = [];
+
+    var rtF1 = [];
+    var rtF10 = [];
+    var rtBR = [];
+    var rtDate = [];
+
+    option = {
+        tooltip: {
+            trigger: 'axis',
+            position: function (pt) {
+                return [pt[0], '10%'];
+            }
+        },
+        title: {
+            left: 'center',
+            text: 'FPS History',
+        },
+        toolbox: {
+            feature: {
+                dataZoom: {
+                    yAxisIndex: 'none'
+                },
+                restore: {},
+                saveAsImage: {}
+            }
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: date
+        },
+        yAxis: {
+            type: 'value',
+            boundaryGap: [0, '100%']
+        },
+        dataZoom: [{
+            type: 'inside',
+            start: 90,
+            end: 100
+        }, {
+            start: 0,
+            end: 10,
+            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+            handleSize: '80%',
+            handleStyle: {
+                color: '#fff',
+                shadowBlur: 3,
+                shadowColor: 'rgba(0, 0, 0, 0.6)',
+                shadowOffsetX: 2,
+                shadowOffsetY: 2
+            }
+        }],
+        series: [
+            {
+                name: 'FPS_1s',
+                type: 'bar',
+                smooth: true,
+                symbol: 'none',
+                sampling: 'average',
+                itemStyle: {
+                    color: 'rgb(255, 70, 131)'
+                },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                        offset: 0,
+                        color: 'rgb(255, 158, 68)'
+                    }, {
+                        offset: 1,
+                        color: 'rgb(255, 70, 131)'
+                    }])
+                },
+                data: data1
+            },
+            {
+                name: 'FPS_10s',
+                type: 'line',
+                smooth: true,
+                symbol: 'none',
+                sampling: 'average',
+                itemStyle: {
+                    color: 'rgb(44, 70, 222)'
+                },
+                
+                data: data2
+            },
+        ]
+    };
+
+    optionRTF = {
+        title: {
+            text: 'Real Time FPS'
+        },
+        tooltip: {
+            trigger: 'axis',
+            position: function (pt) {
+                return [pt[0], '10%'];
+            }
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: rtDate
+        },
+        yAxis: {
+            type: 'value',
+            boundaryGap: [0, '100%'],
+            splitLine: {
+                show: false
+            }
+        },
+        series: [{
+            name: 'FPS_1s',
+            type: 'bar',
+            showSymbol: false,
+            hoverAnimation: false,
+            itemStyle: {
+                    color: 'rgb(255, 70, 131)'
+                },
+            data: rtF1
+        },
+        {
+            name: 'FPS_10s',
+            type: 'line',
+            showSymbol: false,
+            hoverAnimation: false,
+            itemStyle: {
+                    color: 'rgb(33, 70, 131)'
+                },
+            data: rtF10
+        }]
+    };
+
+    optionBR = {
+        title: {
+            text: 'Real Time Bitrate'
+        },
+        tooltip: {
+            trigger: 'axis',
+            position: function (pt) {
+                return [pt[0], '10%'];
+            }
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: rtDate
+        },
+        yAxis: {
+            type: 'value',
+            boundaryGap: [0, '100%'],
+            splitLine: {
+                show: false
+            }
+        },
+        series: [{
+            name: 'Bitrate',
+            type: 'bar',
+            showSymbol: false,
+            hoverAnimation: false,
+            itemStyle: {
+                    color: 'rgb(255, 70, 131)'
+                },
+            data: rtBR
+        }]
+    };
+
+    var fpsHistory = echarts.init(document.getElementById('fps_history'));
+    var fpsRealTime = echarts.init(document.getElementById('real_time_fps'));
+    var brRealTime = echarts.init(document.getElementById('real_time_bitrate'));
+
+    var lastPoint = "0"
+
+    var renderData = function (data) {
+        data.forEach(function (a) {
+            var now = new Date(a.timestamp_ms)
+            var tmstr = [now.getHours(), now.getMinutes(), now.getSeconds()].join(':')
+
+            data1.push(a.avg_fps_1s)
+            data2.push(a.avg_fps_100s)
+            date.push(tmstr)
+
+            rtF1.push(a.avg_fps_1s)
+            rtF10.push(a.avg_fps_10s)
+            rtBR.push(a.bitrate)
+            rtDate.push(tmstr)
+
+            if (rtF1.length > 60) {
+                rtF1.shift()
+                rtF10.shift()
+                rtDate.shift()
+                rtBR.shift()
+            }
+
+            lastPoint = a.timestamp_ms
+        })
+
+       
+    }
+
+    fetch('/v1/points?last_point=' + lastPoint)
+        .then(response => response.json())
+        .then(data => {
+            renderData(data)
+            fpsRealTime.setOption(optionRTF);
+            brRealTime.setOption(optionBR);
+            fpsHistory.setOption(option);
+        });
+
+    setInterval(function() {
+        fetch('/v1/points?last_point=' + lastPoint)
+        .then(response => response.json())
+        .then(data => {
+            renderData(data)
+            fpsRealTime.setOption(optionRTF);
+            brRealTime.setOption(optionBR);
+        });
+    }, 1000)
+
+
+</script>
+
+</html>

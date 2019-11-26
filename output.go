@@ -9,23 +9,29 @@ import (
 	gocache "github.com/patrickmn/go-cache"
 )
 
+type yalsaPoint struct {
+	TimeStamp int `json:"timestamp_ms"`
+	KeyFrame  int `json:"keyframe"`
+	BitRate   int `json:"bitrate"`
+	F1        int `json:"avg_fps_1s"`
+	F10       int `json:"avg_fps_10s"`
+	F100      int `json:"avg_fps_100s"`
+}
+
 var (
 	framesCache = gocache.New(time.Minute*2, time.Second)
+	pointsCache = gocache.New(time.Hour*24, time.Second)
 
-	fps1SecondCache   = gocache.New(time.Hour*24, time.Second)
-	fps10SecondCache  = gocache.New(time.Hour*24, time.Second)
-	fps100SecondCache = gocache.New(time.Hour*24, time.Second)
-
-	f1, f10, f100 int
-	keyframe      int
+	lastPointKey = ""
 )
 
 func count() {
 	frames := framesCache.Items()
 	timeNow := time.Now()
 
-	f1, f10, f100 = 0, 0, 0
-	keyframe = 0
+	f1, f10, f100 := 0, 0, 0
+	keyframe := 0
+	bitrate := 0
 
 	var f100Diff time.Duration
 
@@ -42,8 +48,9 @@ func count() {
 			f1++
 
 			if frame.Keyframe {
-				keyframe = 1
+				keyframe++
 			}
+			bitrate += frame.Size
 		}
 
 		if timeNow.Sub(ft) < time.Second*10 {
@@ -63,9 +70,17 @@ func count() {
 		f100 /= int(f100Diff / time.Second)
 	}
 
-	fps1SecondCache.Add(fmt.Sprint(time.Now().UnixNano()), f1, 0)
-	fps10SecondCache.Add(fmt.Sprint(time.Now().UnixNano()), f10, 0)
-	fps100SecondCache.Add(fmt.Sprint(time.Now().UnixNano()), f100, 0)
+	tms := time.Now().UnixNano() / int64(time.Millisecond)
+	lastPointKey = fmt.Sprint(tms)
+
+	pointsCache.SetDefault(lastPointKey, &yalsaPoint{
+		TimeStamp: int(tms),
+		KeyFrame:  keyframe,
+		BitRate:   bitrate * 8 / 1024,
+		F1:        f1,
+		F10:       f10,
+		F100:      f100,
+	})
 }
 
 func output(streamInfoChan chan *yalsaFrame) {
@@ -79,8 +94,17 @@ func output(streamInfoChan chan *yalsaFrame) {
 			}
 		case <-t.C:
 			count()
-			fmt.Printf("[%s] %3d %3d %3d %2d\n", time.Now().Format("0102T15:04:05.000Z07"), f1, f10, f100, keyframe)
+			var point *yalsaPoint
+			v, ok := pointsCache.Get(lastPointKey)
+			if ok {
+				point = v.(*yalsaPoint)
+			} else {
+				point = &yalsaPoint{}
+			}
 
+			fmt.Printf("[%s] %3d %3d %3d %2d\n",
+				time.Now().Format("0102T15:04:05.000Z07"),
+				point.F1, point.F10, point.F100, point.KeyFrame)
 		}
 	}
 }

@@ -12,6 +12,7 @@ type yalsaFrame struct {
 	DTS       int64
 	PTS       int64
 	Keyframe  bool
+	Size      int
 }
 
 var (
@@ -118,6 +119,7 @@ func demuxing(inputContext *gmf.FmtCtx, streamInfoChan chan *yalsaFrame) {
 				MediaType: ist.CodecCtx().Type(),
 				PTS:       frame.Pts(),
 				Keyframe:  kf,
+				Size:      pkt.Size(),
 			}
 			streamInfoChan <- yf
 
