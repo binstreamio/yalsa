@@ -14,6 +14,7 @@ yalsa is based on ffmpeg, gmf
 ```
 
 Output example:
+
 <img src="yalsa.gif" alt="rtmp.gif" height="360px" />
 
 ## How to build
