@@ -26,7 +26,8 @@
 <script type="text/javascript">
     var xAxisData = [];
     var hisF1 = [];
-    var hisF10 = [];
+    var hisF100 = [];
+    var hisRetries = [];
     var hisDate = [];
 
     var rtF1 = [];
@@ -42,8 +43,7 @@
             }
         },
         title: {
-            left: 'center',
-            text: 'FPS History',
+            text: '              FPS History',
         },
         toolbox: {
             feature: {
@@ -59,10 +59,23 @@
             boundaryGap: false,
             data: hisDate
         },
-        yAxis: {
-            type: 'value',
-            boundaryGap: [0, '100%']
-        },
+        yAxis: [
+            {
+                type: 'value',
+                scale: true,
+                name: 'FPS',
+                max: 50,
+                min: 0,
+                // boundaryGap: [0.2, 0.9]
+            },
+            {
+                type: 'value',
+                scale: true,
+                name: 'Retries',
+                min: 0,
+                boundaryGap: [1, 0.5]
+            }
+        ],
         dataZoom: [{
             type: 'inside',
             start: 90,
@@ -80,6 +93,9 @@
                 shadowOffsetY: 2
             }
         }],
+        legend: {
+            data: ['FPS_1s', 'FPS_100s', 'Source_retries']
+        },
         series: [
             {
                 name: 'FPS_1s',
@@ -90,28 +106,30 @@
                 itemStyle: {
                     color: 'rgb(255, 70, 131)'
                 },
-                areaStyle: {
-                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-                        offset: 0,
-                        color: 'rgb(255, 158, 68)'
-                    }, {
-                        offset: 1,
-                        color: 'rgb(255, 70, 131)'
-                    }])
-                },
                 data: hisF1
             },
             {
-                name: 'FPS_10s',
+                name: 'FPS_100s',
                 type: 'line',
                 smooth: true,
                 symbol: 'none',
                 sampling: 'average',
                 itemStyle: {
+                    color: 'rgb(220, 60, 231)'
+                },
+                data: hisF100
+            },
+            {
+                name: 'Source_retries',
+                type: 'line',
+                smooth: true,
+                symbol: 'none',
+                sampling: 'average',
+                yAxisIndex: 1,
+                itemStyle: {
                     color: 'rgb(44, 70, 222)'
                 },
-
-                data: hisF10
+                data: hisRetries
             },
         ]
     };
@@ -206,7 +224,8 @@
             var tmstr = [now.getHours(), now.getMinutes(), now.getSeconds()].join(':')
 
             hisF1.push(a.avg_fps_1s)
-            hisF10.push(a.avg_fps_10s)
+            hisF100.push(a.avg_fps_100s)
+            hisRetries.push(a.source_retries)
             hisDate.push(tmstr)
 
             rtF1.push(a.avg_fps_1s)

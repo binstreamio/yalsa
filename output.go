@@ -16,6 +16,8 @@ type yalsaPoint struct {
 	F1        int `json:"avg_fps_1s"`
 	F10       int `json:"avg_fps_10s"`
 	F100      int `json:"avg_fps_100s"`
+
+	SourceRetries int `json:"source_retries"`
 }
 
 var (
@@ -24,6 +26,14 @@ var (
 
 	lastPointKey = ""
 )
+
+func savePoints() {
+	pointsCache.SaveFile(fmt.Sprintf("yasla_%d.data", *port))
+}
+
+func loadPoints() error {
+	return pointsCache.LoadFile(fmt.Sprintf("yasla_%d.data", *port))
+}
 
 func count() {
 	frames := framesCache.Items()
@@ -74,12 +84,13 @@ func count() {
 	lastPointKey = fmt.Sprint(tms)
 
 	pointsCache.SetDefault(lastPointKey, &yalsaPoint{
-		TimeStamp: int(tms),
-		KeyFrame:  keyframe,
-		BitRate:   bitrate * 8 / 1024,
-		F1:        f1,
-		F10:       f10,
-		F100:      f100,
+		TimeStamp:     int(tms),
+		KeyFrame:      keyframe,
+		BitRate:       bitrate * 8 / 1024,
+		F1:            f1,
+		F10:           f10,
+		F100:          f100,
+		SourceRetries: sourceRetries,
 	})
 }
 
@@ -102,9 +113,9 @@ func output(streamInfoChan chan *yalsaFrame) {
 				point = &yalsaPoint{}
 			}
 
-			fmt.Printf("[%s] %3d %3d %3d %2d\n",
+			fmt.Printf("[%s] %3d %3d %3d %5dK %2d\n",
 				time.Now().Format("0102T15:04:05.000Z07"),
-				point.F1, point.F10, point.F100, point.KeyFrame)
+				point.F1, point.F10, point.F100, point.BitRate, point.KeyFrame)
 		}
 	}
 }

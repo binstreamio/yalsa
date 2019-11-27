@@ -1,9 +1,13 @@
 package main
 
 import (
+	"encoding/gob"
 	"flag"
 	"fmt"
+	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -14,7 +18,27 @@ func init() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] live_stream_url\n", os.Args[0])
 		flag.PrintDefaults()
 	}
+
+	gob.Register(&yalsaPoint{})
+
+	interruptChannel := make(chan os.Signal, 1)
+	signal.Notify(interruptChannel,
+		os.Interrupt,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+	go func(interruptChannel chan os.Signal) {
+		for range interruptChannel {
+			log.Println("Exiting 1 ...")
+			savePoints()
+			log.Println("Exiting 2...")
+			os.Exit(0)
+		}
+	}(interruptChannel)
 }
+
+var sourceRetries = 0
 
 func main() {
 	flag.Parse()
@@ -24,18 +48,21 @@ func main() {
 		return
 	}
 
+	fmt.Println(loadPoints())
+
 	streamInfoChan := make(chan *yalsaFrame)
 
 	go output(streamInfoChan)
 
 	go func() {
 		for {
+			sourceRetries++
 			iCtx, err := openStream(flag.Arg(0))
 			if err == nil {
 				demuxing(iCtx, streamInfoChan)
 			}
 
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 1)
 		}
 	}()
 
