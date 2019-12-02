@@ -11,7 +11,7 @@ import (
 
 type yalsaPoint struct {
 	TimeStamp int `json:"timestamp_ms"`
-	KeyFrame  int `json:"keyframe"`
+	KeyFrame  int `json:"keyframes"`
 	BitRate   int `json:"bitrate"`
 	F1        int `json:"avg_fps_1s"`
 	F10       int `json:"avg_fps_10s"`

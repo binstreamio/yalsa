@@ -4,7 +4,6 @@ import (
 	"encoding/gob"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -30,9 +29,7 @@ func init() {
 		syscall.SIGQUIT)
 	go func(interruptChannel chan os.Signal) {
 		for range interruptChannel {
-			log.Println("Exiting 1 ...")
 			savePoints()
-			log.Println("Exiting 2...")
 			os.Exit(0)
 		}
 	}(interruptChannel)
@@ -62,7 +59,7 @@ func main() {
 				demuxing(iCtx, streamInfoChan)
 			}
 
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Second * 3)
 		}
 	}()
 

@@ -13,11 +13,13 @@
         <h1 style="text-align: center">Live Stream Monitor</h1>
     </div>
     <br>
-    <div id="real_time" style="height:250px; display: grid; grid-template-columns: 8% 40% 4% 40%;">
+    <div id="real_time" style="height:250px; display: grid; grid-template-columns: 6% 28% 1% 28% 1% 28%;">
         <div></div>
         <div id="real_time_fps" style="background-color: #ebf1eb;"></div>
         <div></div>
         <div id="real_time_bitrate" style="background-color: #ebf1eb;"></div>
+        <div></div>
+        <div id="real_time_keyframes" style="background-color: #ebf1eb;"></div>
     </div>
     <br><br><br>
     <div id="fps_history" style="height:300px;"></div>
@@ -33,6 +35,7 @@
     var rtF1 = [];
     var rtF10 = [];
     var rtBR = [];
+    var rtKFS = [];
     var rtDate = [];
 
     option = {
@@ -153,7 +156,7 @@
             type: 'value',
             boundaryGap: [0, '100%'],
             splitLine: {
-                show: false
+                show: true
             }
         },
         series: [{
@@ -197,7 +200,7 @@
             type: 'value',
             boundaryGap: [0, '100%'],
             splitLine: {
-                show: false
+                show: true
             }
         },
         series: [{
@@ -212,9 +215,44 @@
         }]
     };
 
+    optionKFS = {
+        title: {
+            text: 'Real Time Keyframes'
+        },
+        tooltip: {
+            trigger: 'axis',
+            position: function (pt) {
+                return [pt[0], '10%'];
+            }
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: rtDate
+        },
+        yAxis: {
+            type: 'value',
+            boundaryGap: [0, '100%'],
+            splitLine: {
+                show: true
+            }
+        },
+        series: [{
+            name: 'Keyframes',
+            type: 'bar',
+            showSymbol: false,
+            hoverAnimation: false,
+            itemStyle: {
+                color: 'rgb(255, 70, 131)'
+            },
+            data: rtKFS
+        }]
+    };
+
     var fpsHistory = echarts.init(document.getElementById('fps_history'));
     var fpsRealTime = echarts.init(document.getElementById('real_time_fps'));
     var brRealTime = echarts.init(document.getElementById('real_time_bitrate'));
+    var kfsRealTime = echarts.init(document.getElementById('real_time_keyframes'));
 
     var lastPoint = "0"
 
@@ -231,6 +269,7 @@
             rtF1.push(a.avg_fps_1s)
             rtF10.push(a.avg_fps_10s)
             rtBR.push(a.bitrate)
+            rtKFS.push(a.keyframes)
             rtDate.push(tmstr)
 
             if (rtF1.length > 60) {
@@ -238,6 +277,7 @@
                 rtF10.shift()
                 rtDate.shift()
                 rtBR.shift()
+                rtKFS.shift()
             }
 
             lastPoint = a.timestamp_ms
@@ -252,6 +292,7 @@
             renderData(data)
             fpsRealTime.setOption(optionRTF);
             brRealTime.setOption(optionBR);
+            kfsRealTime.setOption(optionKFS);
             fpsHistory.setOption(option);
         });
 
@@ -262,6 +303,7 @@
                 renderData(data)
                 fpsRealTime.setOption(optionRTF);
                 brRealTime.setOption(optionBR);
+                kfsRealTime.setOption(optionKFS);
             });
     }, 1000)
 </script>
